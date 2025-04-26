@@ -4,6 +4,7 @@ import com.PicSell_IT342.PicSell.Model.UserModel;
 import com.PicSell_IT342.PicSell.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -19,8 +20,8 @@ import java.util.Map;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final JwtEncoder jwtEncoder;
 
@@ -28,6 +29,57 @@ public class UserService {
     public UserService(UserRepository userRepository, JwtEncoder jwtEncoder) {
         this.userRepository = userRepository;
         this.jwtEncoder = jwtEncoder;
+    }
+
+    public UserModel registerUser(UserModel user) {
+        if (userRepository.findByUsername(user.getUsername()) != null) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        user.setPassword(encoder.encode(user.getPassword()));
+        user.setRole("ROLE_USER");
+        return userRepository.save(user);
+    }
+
+    public Map<String, Object> login(String username, String password) {
+        UserModel user = userRepository.findByUsername(username);
+        if (user == null || !encoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("Invalid credentials");
+        }
+        return generateTokenResponse(user);
+    }
+
+    private Map<String, Object> generateTokenResponse(UserModel user) {
+        // Check for nulls and throw meaningful exceptions if encountered
+        if (user == null) {
+            throw new IllegalArgumentException("User object is null.");
+        }
+        if (user.getUserId() == null) {
+            throw new IllegalArgumentException("User ID is null.");
+        }
+        if (user.getUsername() == null) {
+            throw new IllegalArgumentException("Username is null.");
+        }
+        if (user.getRole() == null) {
+            throw new IllegalArgumentException("Role is null.");
+        }
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .subject(user.getUsername())
+                .claim("userId", user.getUserId())
+                .claim("roles", List.of(user.getRole()))
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
+                .build();
+
+        String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("token", token);
+        result.put("userId", user.getUserId());
+        result.put("username", user.getUsername());
+        result.put("email", user.getEmail());
+        result.put("roles", user.getRole());
+        return result;
+
     }
 
     public String deleteUser(Long id) {
@@ -47,19 +99,10 @@ public class UserService {
         return null;
     }
 
-    public UserModel registerUser(UserModel user) {
-        if (userRepository.findByUsername(user.getUsername()) != null) {
-            throw new IllegalArgumentException("Username already exists");
-        }
-        user.setPassword(encoder.encode(user.getPassword()));
-        user.setRole("ROLE_USER"); // default for normal users
-        return userRepository.save(user);
-    }
-
-    public Object login(String username, String password) {
-        UserModel user = userRepository.findByUsername(username);
-        if (user == null || !encoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+    public Map<String, Object> generateTokenFromEmail(String email) {
+        UserModel user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found for email: " + email);
         }
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -72,34 +115,12 @@ public class UserService {
 
         String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("userId", user.getUserId());
-        response.put("username", user.getUsername());
-        response.put("email", user.getEmail());
-        response.put("roles", user.getRole());
-
-        return response;
+        return Map.of(
+                "token", token,
+                "userId", user.getUserId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "roles", user.getRole()
+        );
     }
-
-
-    private Object tokenResponse(UserModel user) {
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(user.getUsername())
-                .claim("userId", user.getUserId())
-                .build();
-
-        String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-        return
-                Map.of(
-                        "token", token,
-                        "userId", user.getUserId(),
-                        "username", user.getUsername(),
-                        "email", user.getEmail(),
-                        "roles", user.getRole()
-                );
-    }
-
-
 }

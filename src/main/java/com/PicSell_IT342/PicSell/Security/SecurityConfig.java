@@ -1,6 +1,5 @@
 package com.PicSell_IT342.PicSell.Security;
 
-
 import com.PicSell_IT342.PicSell.Model.UserModel;
 import com.PicSell_IT342.PicSell.Repository.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -10,7 +9,6 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
@@ -34,53 +33,46 @@ import java.util.UUID;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final JwtOAuth2SuccessHandler oAuth2SuccessHandler;
-    private final JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
-                          @Lazy JwtOAuth2SuccessHandler oAuth2SuccessHandler,
-                          @Lazy JwtAuthFilter jwtAuthFilter) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
+    private KeyPair keyPair;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // allow sessions for web login
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")  // still good
-                        .requestMatchers("/", "/login", "/users/login", "/users/register", "/oauth2/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/", "/login", "/users/register", "/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/**").authenticated() // Protect your APIs
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .successHandler(loginSuccessHandler())
                         .failureHandler(loginFailureHandler())
-                        .defaultSuccessUrl("/swagger-ui/index.html", true)
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(oAuth2SuccessHandler)
+                        .successHandler(oauth2LoginSuccessHandler())
+                        .failureHandler(loginFailureHandler())
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout.logoutSuccessUrl("/"));
 
+        // Add JWT Authentication Filter
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
     public AuthenticationSuccessHandler loginSuccessHandler() {
-        return (request, response, authentication) -> {
-            String username = authentication.getName();
-            System.out.println("[✅ LOGIN SUCCESS] User: " + username);
-            response.sendRedirect("/swagger-ui/index.html");
-        };
+        return new FormLoginSuccessHandler(jwtEncoder());
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler oauth2LoginSuccessHandler() {
+        return new OAuth2LoginSuccessHandler(jwtEncoder());
     }
 
     @Bean
@@ -95,8 +87,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    private KeyPair keyPair;
 
     private KeyPair generateKeyPair() {
         try {
@@ -140,10 +130,7 @@ public class SecurityConfig {
             if (user == null) {
                 throw new UsernameNotFoundException("User not found");
             }
-
-
             String role = user.getRole();
-
             return new org.springframework.security.core.userdetails.User(
                     user.getUsername(),
                     user.getPassword(),
@@ -151,5 +138,4 @@ public class SecurityConfig {
             );
         };
     }
-
 }

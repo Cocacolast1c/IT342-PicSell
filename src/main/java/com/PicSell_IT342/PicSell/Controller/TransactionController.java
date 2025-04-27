@@ -21,8 +21,8 @@ public class TransactionController {
         return transactionService.getAllTransactions();
     }
 
-    private static final String SUCCESS_URL  = "http://localhost:8080/transactions/success";
-    private static final String CANCEL_URL   = "http://localhost:8080/transactions/cancel";
+    private static final String SUCCESS_URL  = "https://it342-picsell.onrender.com/transactions/success";
+    private static final String CANCEL_URL   = "https://it342-picsell.onrender.com/transactions/cancel";
 
 
     @PostMapping("/pay")

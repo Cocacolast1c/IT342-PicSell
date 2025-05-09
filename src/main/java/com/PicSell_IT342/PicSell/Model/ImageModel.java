@@ -1,6 +1,7 @@
 package com.PicSell_IT342.PicSell.Model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -29,7 +30,6 @@ public class ImageModel {
 
     @ManyToOne
     @JoinColumn(name = "uploader_id", nullable = false)
-    @JsonBackReference("user-images")
     private UserModel uploader;
 
     @OneToMany(mappedBy = "image", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -37,6 +37,6 @@ public class ImageModel {
     private Set<InventoryModel> inventory;
 
     @OneToMany(mappedBy = "image", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference("image-transactions")
+    @JsonIgnore
     private Set<TransactionsModel> transactions;
 }

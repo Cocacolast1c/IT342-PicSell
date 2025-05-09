@@ -2,84 +2,128 @@ package com.PicSell_IT342.PicSell.Security;
 
 import com.PicSell_IT342.PicSell.Model.UserModel;
 import com.PicSell_IT342.PicSell.Repository.UserRepository;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // ADDED
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 
-import java.security.*;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    private KeyPair keyPair;
+    private final JwtDecoder jwtDecoder;
+
+    @Autowired
+    public SecurityConfig(JwtDecoder jwtDecoder) {
+        this.jwtDecoder = jwtDecoder;
+    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            FormLoginSuccessHandler formLoginSuccessHandler,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            AuthenticationFailureHandler loginFailureHandler
+    ) throws Exception {
 
         http
+                .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // allow sessions for web login
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/users/register", "/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/**").authenticated() // Protect your APIs
-                        .anyRequest().permitAll()
+                        // Public endpoints
+                        .requestMatchers("/", "/login", "/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users/register", "/users/login").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/images", "/images/search", "/images/{id}").permitAll()
+                        .requestMatchers("/token/test").permitAll()
+
+                        // Admin endpoints (restrict to ROLE_ADMIN)
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/images/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/images/{id}").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/images").authenticated()
+
+                        // Other authenticated endpoints
+                        .requestMatchers("/inventory/**", "/transactions/**", "/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/users/{id}").authenticated()
+
+                        // Default: Any other request needs authentication
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .successHandler(loginSuccessHandler())
-                        .failureHandler(loginFailureHandler())
+                        .loginPage("/login").loginProcessingUrl("/login")
+                        .successHandler(formLoginSuccessHandler).failureHandler(loginFailureHandler)
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
-                        .successHandler(oauth2LoginSuccessHandler())
-                        .failureHandler(loginFailureHandler())
+                        .loginPage("/login").successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(loginFailureHandler)
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/"));
-
-        // Add JWT Authentication Filter
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()), UsernamePasswordAuthenticationFilter.class);
+                .oauth2ResourceServer(oauth2ResourceServer ->
+                        oauth2ResourceServer.jwt(jwt -> jwt
+                                .decoder(this.jwtDecoder)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter()) // Use the custom converter bean
+                        )
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            objectMapper.writeValue(response.getWriter(), Map.of("message", "Logout successful"));
+                            response.getWriter().flush();
+                        })
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll());
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler loginSuccessHandler() {
-        return new FormLoginSuccessHandler(jwtEncoder());
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler oauth2LoginSuccessHandler() {
-        return new OAuth2LoginSuccessHandler(jwtEncoder());
     }
 
     @Bean
     public AuthenticationFailureHandler loginFailureHandler() {
         return (request, response, exception) -> {
             System.out.println("[❌ LOGIN FAILED] Reason: " + exception.getMessage());
-            response.sendRedirect("/login?error");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(response.getWriter(), Map.of("error", "Authentication Failed", "message", exception.getMessage()));
+            response.getWriter().flush();
         };
     }
 
@@ -88,54 +132,31 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    private KeyPair generateKeyPair() {
-        try {
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(2048);
-            return generator.generateKeyPair();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private RSAPublicKey publicKey() {
-        if (keyPair == null) keyPair = generateKeyPair();
-        return (RSAPublicKey) keyPair.getPublic();
-    }
-
-    private RSAPrivateKey privateKey() {
-        if (keyPair == null) keyPair = generateKeyPair();
-        return (RSAPrivateKey) keyPair.getPrivate();
-    }
-
-    @Bean
-    public JwtEncoder jwtEncoder() {
-        RSAKey rsaKey = new RSAKey.Builder(publicKey())
-                .privateKey(privateKey())
-                .keyID(UUID.randomUUID().toString())
-                .build();
-        JWKSource<SecurityContext> source = new ImmutableJWKSet<>(new JWKSet(rsaKey));
-        return new NimbusJwtEncoder(source);
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(publicKey()).build();
-    }
-
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
         return username -> {
             UserModel user = userRepository.findByUsername(username);
             if (user == null) {
-                throw new UsernameNotFoundException("User not found");
+                user = userRepository.findByEmail(username);
+                if (user == null) {
+                    throw new UsernameNotFoundException("User not found with username or email: " + username);
+                }
             }
-            String role = user.getRole();
+            String role = user.getRole() != null ? (user.getRole().startsWith("ROLE_") ? user.getRole() : "ROLE_" + user.getRole()) : "ROLE_USER";
+            String principalName = user.getUsername() != null ? user.getUsername() : user.getEmail();
+            String password = user.getPassword() != null ? user.getPassword() : "";
+
             return new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
-                    user.getPassword(),
+                    principalName,
+                    password,
                     List.of(new SimpleGrantedAuthority(role))
             );
         };
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper;
     }
 }

@@ -24,5 +24,5 @@ public class NotificationModel {
     private Date timestamp;
     private boolean isRead = false;
 
-    // Getters and Setters
+
 }

@@ -39,5 +39,8 @@ public class InventoryModel {
         this.imageId = image.getImageId();
         this.userId = user.getUserId();
     }
-    // Getters and Setters
+
+    public Long getInventoryId() {
+        return id;
+    }
 }

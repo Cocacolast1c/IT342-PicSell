@@ -5,46 +5,44 @@ import com.PicSell_IT342.PicSell.Service.UserService;
 import com.PicSell_IT342.PicSell.dto.LoginRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    @Autowired
-    private UserService userService;
 
+    private final UserService userService;
+
+    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?>  updateUser(@PathVariable Long id, @RequestBody UserModel userDetails) {
-        try {
-            return ResponseEntity.ok(userService.updateUser(id, userDetails));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
+    public ResponseEntity<UserModel> updateUser(@PathVariable Long id, @RequestBody UserModel userDetails) {
+        UserModel updatedUser = userService.updateUser(id, userDetails);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserModel user) {
-        try {
-            UserModel registeredStudent = userService.registerUser(user);
-            return ResponseEntity.ok("User registered successfully");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<UserModel> registerUser(@RequestBody UserModel user) {
+        UserModel registeredUser = userService.registerUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            return ResponseEntity.ok(userService.login(loginRequest.getUsername(), loginRequest.getPassword()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
-
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
+        Map<String, Object> loginResponse = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+        return ResponseEntity.ok(loginResponse);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 }

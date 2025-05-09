@@ -1,5 +1,6 @@
 package com.PicSell_IT342.PicSell.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,25 +24,32 @@ public class UserModel {
     @Column(name = "image_file", columnDefinition = "LONGBLOB")
     private byte[] imagefile;
 
+
     @OneToMany(mappedBy = "uploader", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference("user-images")
+    @JsonIgnore
     private Set<ImageModel> uploadedImages;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference("user-inventory")
+    @JsonIgnore
     private Set<InventoryModel> inventory;
 
     @OneToMany(mappedBy = "buyer")
     @JsonManagedReference("user-boughtTransactions")
+    @JsonIgnore
     private Set<TransactionsModel> boughtTransactions;
 
     @OneToMany(mappedBy = "seller")
     @JsonManagedReference("user-soldTransactions")
+    @JsonIgnore
     private Set<TransactionsModel> soldTransactions;
 
     @OneToMany(mappedBy = "user")
     @JsonManagedReference("user-notifications")
+    @JsonIgnore
     private Set<NotificationModel> notifications;
 
-    // Getters and Setters
+    public UserModel() {}
+
 }

@@ -1,0 +1,266 @@
+/* Etsy-inspired styling */
+
+:root {
+  --etsy-orange: #F1641E;
+  --etsy-dark-orange: #E55300;
+  --etsy-black: #222222;
+  --etsy-gray: #595959;
+  --etsy-light-gray: #E1E3DF;
+  --etsy-lighter-gray: #F5F5F1;
+  --etsy-green: #4CAF50;
+  --etsy-dark-green: #388E3C;
+  --etsy-success: #2E8B57;
+  --etsy-error: #D0021B;
+  --etsy-warning: #F1AA3E;
+}
+
+body {
+  font-family: 'Graphik Webfont', -apple-system, BlinkMacSystemFont, 'Roboto', 'Droid Sans', 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: var(--etsy-black);
+  background-color: var(--etsy-lighter-gray);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Navigation */
+.navbar {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1rem;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--etsy-orange) !important;
+}
+
+.nav-link {
+  color: var(--etsy-black) !important;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: var(--etsy-orange) !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--etsy-orange);
+  border-color: var(--etsy-orange);
+  font-weight: 600;
+  border-radius: 24px;
+  padding: 0.5rem 1.25rem;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--etsy-dark-orange) !important;
+  border-color: var(--etsy-dark-orange) !important;
+}
+
+.btn-outline-primary {
+  color: var(--etsy-orange);
+  border-color: var(--etsy-orange);
+  border-radius: 24px;
+  font-weight: 600;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+  background-color: var(--etsy-orange);
+  border-color: var(--etsy-orange);
+}
+
+.btn-secondary {
+  background-color: white;
+  border-color: var(--etsy-light-gray);
+  color: var(--etsy-black);
+  border-radius: 24px;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background-color: var(--etsy-light-gray);
+  border-color: var(--etsy-light-gray);
+  color: var(--etsy-black);
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.image-card {
+  cursor: pointer;
+}
+
+.image-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-title {
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Forms */
+.form-control {
+  border-radius: 24px;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--etsy-light-gray);
+}
+
+.form-control:focus {
+  border-color: var(--etsy-orange);
+  box-shadow: 0 0 0 0.2rem rgba(241, 100, 30, 0.25);
+}
+
+.auth-form {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  color: var(--etsy-black);
+}
+
+.text-success {
+  color: var(--etsy-success) !important;
+}
+
+.text-muted {
+  color: var(--etsy-gray) !important;
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.4rem 0.8rem;
+  border-radius: 24px;
+}
+
+/* Transaction cards */
+.transaction-card {
+  margin-bottom: 1rem;
+}
+
+/* Image detail */
+.image-detail-img {
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: 3px;
+}
+
+/* Search bar */
+.search-bar {
+  border-radius: 24px;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--etsy-light-gray);
+  width: 100%;
+}
+
+/* Home page */
+.hero-section {
+  background-color: white;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--etsy-gray);
+  margin-bottom: 2rem;
+}
+
+/* Category tabs */
+.category-tabs {
+  margin-bottom: 2rem;
+}
+
+.category-tabs .nav-link {
+  color: var(--etsy-gray);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+}
+
+.category-tabs .nav-link.active {
+  color: var(--etsy-black);
+  border-bottom: 2px solid var(--etsy-orange);
+}
+
+/* Footer */
+.footer {
+  background-color: white;
+  padding: 3rem 0;
+  margin-top: 3rem;
+  border-top: 1px solid var(--etsy-light-gray);
+}
+
+.footer-title {
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+  color: var(--etsy-gray);
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: var(--etsy-orange);
+}
+
+/* Price formatting */
+.price {
+  font-weight: 700;
+  color: var(--etsy-black);
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .card-img-top {
+    height: 180px;
+  }
+}

@@ -1,0 +1,262 @@
+/* Etsy-inspired Theme for PicSell Web Application */
+
+:root {
+  /* Etsy-inspired color palette */
+  --etsy-orange: #F1641E;
+  --etsy-dark-orange: #D35400;
+  --etsy-black: #222222;
+  --etsy-dark-gray: #595959;
+  --etsy-gray: #888888;
+  --etsy-light-gray: #E1E3DF;
+  --etsy-off-white: #F5F5F1;
+  --etsy-white: #FFFFFF;
+  --etsy-success: #2E8B57;
+  --etsy-error: #D0021B;
+  
+  /* Override Bootstrap primary colors */
+  --bs-primary: var(--etsy-orange);
+  --bs-primary-rgb: 241, 100, 30;
+  --bs-primary-hover: var(--etsy-dark-orange);
+}
+
+/* General styling */
+body {
+  font-family: 'Graphik Webfont', -apple-system, BlinkMacSystemFont, 'Roboto', 'Droid Sans', 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: var(--etsy-black);
+  background-color: var(--etsy-white);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  color: var(--etsy-black);
+}
+
+.price {
+  color: var(--etsy-black);
+  font-weight: 500;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--etsy-orange);
+  border-color: var(--etsy-orange);
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--etsy-dark-orange) !important;
+  border-color: var(--etsy-dark-orange) !important;
+}
+
+.btn-outline-primary {
+  color: var(--etsy-orange);
+  border-color: var(--etsy-orange);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--etsy-orange);
+  border-color: var(--etsy-orange);
+}
+
+/* Navigation */
+.navbar {
+  border-bottom: 1px solid var(--etsy-light-gray);
+}
+
+.nav-link {
+  color: var(--etsy-black);
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: var(--etsy-orange);
+}
+
+.search-bar {
+  border-radius: 24px 0 0 24px;
+  border: 2px solid var(--etsy-light-gray);
+  border-right: none;
+}
+
+.search-bar:focus {
+  box-shadow: none;
+  border-color: var(--etsy-gray);
+}
+
+.navbar .btn-primary {
+  border-radius: 0 24px 24px 0;
+}
+
+/* Image cards */
+.image-card {
+  transition: transform 0.2s ease;
+}
+
+.image-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Hero section */
+.hero-section {
+  background-color: var(--etsy-off-white);
+  padding: 60px 0;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: var(--etsy-dark-gray);
+}
+
+/* Category tabs */
+.category-tabs {
+  border-bottom: 1px solid var(--etsy-light-gray);
+}
+
+.category-tabs .nav-link {
+  color: var(--etsy-dark-gray);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  margin-right: 0.5rem;
+  font-weight: 500;
+}
+
+.category-tabs .nav-link.active,
+.category-tabs .nav-link:hover {
+  color: var(--etsy-black);
+  border-bottom: 2px solid var(--etsy-orange);
+  background-color: transparent;
+}
+
+/* Footer */
+.footer {
+  background-color: var(--etsy-off-white);
+  padding: 60px 0 30px;
+  margin-top: 60px;
+}
+
+.footer-title {
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+  color: var(--etsy-dark-gray);
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: var(--etsy-orange);
+  text-decoration: underline;
+}
+
+/* Transaction styles */
+.transaction-tabs .nav-link {
+  color: var(--etsy-dark-gray);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border: none;
+}
+
+.transaction-tabs .nav-link.active {
+  color: var(--etsy-black);
+  border-bottom: 2px solid var(--etsy-orange);
+  background-color: transparent;
+}
+
+.transaction-image-container {
+  height: 100%;
+  min-height: 150px;
+  overflow: hidden;
+}
+
+.transaction-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.transaction-image:hover {
+  transform: scale(1.05);
+}
+
+.transaction-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.transaction-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Form controls */
+.form-control:focus {
+  border-color: var(--etsy-gray);
+  box-shadow: 0 0 0 0.25rem rgba(241, 100, 30, 0.25);
+}
+
+/* Upload area */
+.upload-area {
+  border: 2px dashed var(--etsy-light-gray);
+  border-radius: 8px;
+  padding: 2rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.upload-area:hover {
+  border-color: var(--etsy-orange);
+  background-color: rgba(241, 100, 30, 0.05);
+}
+
+/* Alerts */
+.alert-success {
+  background-color: #f1f8f5;
+  border-color: #d4e9e2;
+  color: var(--etsy-success);
+}
+
+.alert-danger {
+  background-color: #fff5f5;
+  border-color: #ffebeb;
+  color: var(--etsy-error);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .hero-section {
+    padding: 40px 0;
+  }
+}

@@ -49,7 +49,7 @@ public class ImageService {
         if (query == null || query.trim().isEmpty()) { return findPublicImages(); }
         String trimmedQuery = query.trim();
         log.debug("Searching images for query: '{}'", trimmedQuery);
-        return imageRepository.findbyQuery(
+        return imageRepository.findDistinctByImageNameContainingIgnoreCaseOrImageDescriptionContainingIgnoreCaseOrTagsContainingIgnoreCase(
                 trimmedQuery, trimmedQuery, trimmedQuery);
     }
 

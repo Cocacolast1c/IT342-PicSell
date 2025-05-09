@@ -15,7 +15,7 @@ public interface ImageRepository extends JpaRepository<ImageModel, Long> {
 
     List<ImageModel> findByUploaderUserId(Long userId);
 
-    List<ImageModel> findbyQuery(
+    List<ImageModel> findDistinctByImageNameContainingIgnoreCaseOrImageDescriptionContainingIgnoreCaseOrTagsContainingIgnoreCase(
             String imageNameQuery, String descriptionQuery, String tagsQuery);
 
 }

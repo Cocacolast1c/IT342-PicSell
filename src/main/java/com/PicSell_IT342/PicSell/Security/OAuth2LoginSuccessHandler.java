@@ -30,7 +30,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final JwtEncoder jwtEncoder;
 
-    @Value("${frontend.auth.callback.url:http://localhost:3000/auth/google/callback}")
+    @Value("${frontend.auth.callback.url:https://picsell.vercel.app/auth/google/callback}")
     private String frontendCallbackUrl;
 
     @Autowired

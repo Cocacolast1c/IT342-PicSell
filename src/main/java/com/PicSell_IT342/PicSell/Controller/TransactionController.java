@@ -31,11 +31,11 @@ public class TransactionController {
     @Autowired private TransactionService transactionService;
     @Autowired private UserService userService;
 
-    @Value("${paypal.redirect.success.url:http://localhost:3000/payment-success}")
+    @Value("${paypal.redirect.success.url:https://picsell.vercel.app/payment-success}")
     private String frontendSuccessUrl;
-    @Value("${paypal.redirect.cancel.url:http://localhost:3000/payment-cancel}")
+    @Value("${paypal.redirect.cancel.url:https://picsell.vercel.app/payment-cancel}")
     private String frontendCancelUrl;
-    @Value("${paypal.callback.baseurl:http://localhost:8080}")
+    @Value("${paypal.callback.baseurl:https://it342-picsell.onrender.com}")
     private String callbackBaseUrl;
 
     @GetMapping
